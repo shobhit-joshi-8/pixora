@@ -1,38 +1,92 @@
 import React, { useEffect, useState } from 'react'
-import { DUMMY_MEDIA } from '../assets/assets';
 import { MopIcon, PlayIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react';
 import Loading from '../components/layout/common/Loading';
+import { api } from '../config/api';
+import toast from 'react-hot-toast';
 
 const TrashPage = () => {
     const [photos, setPhotos] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Fetch trash
     const fetchTrash = async () => {
-        setTimeout(() => {
-            setPhotos(DUMMY_MEDIA);
+        try {
+            const res = await api.get("/api/media/trash");
+
+            setPhotos(res.data.media || []);
+        } catch (error) {
+            toast.error("Failed to load trash");
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     };
 
     useEffect(() => {
         fetchTrash();
     }, []);
 
+    // Empty trash
     const handleEmptyTrash = async () => {
-        console.log("Handle empty trash");
+        if (photos.length === 0) return;
+
+        const confirmed = window.confirm(
+            `Permanently delete all ${photos.length} items in trash? This cannot be undone.`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const res = await api.delete("/api/media/trash/empty");
+
+            toast.success(res.data.message || "Trash emptied");
+
+            setPhotos([]);
+        } catch (error) {
+            toast.error("Failed to empty trash");
+        }
     };
 
     const handleRestore = async (id) => {
-        console.log("Handle empty trash");
+        try {
+            await api.patch(`/api/media/${id}/trash`, {
+                restore: true,
+            });
+
+            setPhotos((prev) =>
+                prev.filter((p) => p._id !== id)
+            );
+
+            toast.success("Restored to library");
+        } catch (error) {
+            toast.error("Failed to restore item");
+        }
     };
 
     const handleDeletePermanent = async (id) => {
-        console.log("Handle empty trash");
+        const confirmed = window.confirm(
+            "Permanently delete this item? This cannot be undone."
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await api.delete(`/api/media/${id}`);
+
+            setPhotos((prev) =>
+                prev.filter((p) => p._id !== id)
+            );
+
+            toast.success("Permanently deleted");
+        } catch (error) {
+            toast.error("Failed to delete item");
+        }
     };
 
     return (
         <div className="max-w-7xl mx-auto space-y-6">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-2 border-b border-slate-200/60">
                 <div>
                     <h2 className="text-2xl font-medium text-slate-900 tracking-tight flex items-center gap-2">
                         <Trash2Icon className="size-6 text-red-500" />
@@ -53,7 +107,7 @@ const TrashPage = () => {
                 {photos.length > 0 && (
                     <button
                         onClick={handleEmptyTrash}
-                        className="flex items-center px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-medium rounded-full transition cursor-pointer"
+                        className="self-start flex items-center px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-medium rounded-full transition cursor-pointer"
                     >
                         <MopIcon className="size-4 mr-2" />
                         <span>Clear Trash</span>
@@ -75,7 +129,7 @@ const TrashPage = () => {
                     </p>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
                     {photos.map((photo) => {
                         const isVideo =
                             photo.mediaType === "video" ||

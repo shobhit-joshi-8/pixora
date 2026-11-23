@@ -62,19 +62,19 @@ export const PhotoLightbox = ({ photos, currentPhoto, onClose, onToggleFavorite,
         <div className="lightbox-backdrop">
             {/* Top Toolbar */}
             <div className="lightbox-toolbar">
-                <div className="flex items-center gap-4">
+                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
                     <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition cursor-pointer text-white" title="Close (Esc)">
                         <X className="size-5" />
                     </button>
                     <div>
-                        <h3 className="text-sm font-semibold truncate max-w-sm">{activePhoto.title}</h3>
+                        <h3 className="text-sm font-semibold truncate max-w-[36vw] sm:max-w-sm">{activePhoto.title}</h3>
                         <p className="text-[11px] text-white/70">
                             {currentIndex + 1} of {photos.length}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex w-full items-center justify-end gap-1 sm:w-auto sm:gap-2">
                     <button onClick={() => onToggleFavorite(activePhoto._id)} className={`lightbox-btn ${activePhoto.isFavorite ? "bg-amber-400 text-slate-900" : ""}`} title="Favorite">
                         <StarIcon className={`size-5 ${activePhoto.isFavorite ? "fill-slate-900" : ""}`} />
                     </button>
@@ -114,13 +114,13 @@ export const PhotoLightbox = ({ photos, currentPhoto, onClose, onToggleFavorite,
             <div className="flex-1 relative flex items-center justify-center overflow-hidden">
                 {/* Previous button */}
                 {photos.length > 1 && (
-                    <button onClick={handlePrev} className="lightbox-nav-btn left-4" title="Previous photo">
+                    <button onClick={handlePrev} className="lightbox-nav-btn left-2 sm:left-4" title="Previous photo">
                         <ChevronLeftIcon className="size-6" />
                     </button>
                 )}
 
                 {/* Media Display */}
-                <div className="size-full p-4 flex items-center justify-center">
+                <div className="size-full p-2 sm:p-4 flex items-center justify-center">
                     {activePhoto.mediaType === "video" || activePhoto.format === "mp4" || activePhoto.format === "mov" || activePhoto.format === "webm" || activePhoto.url?.endsWith(".mp4") ? (
                         <div key={activePhoto._id} className="w-full max-w-4xl max-h-[82vh] flex items-center justify-center overflow-hidden rounded-2xl shadow-2xl bg-black">
                             
@@ -133,7 +133,7 @@ export const PhotoLightbox = ({ photos, currentPhoto, onClose, onToggleFavorite,
 
                 {/* Next button */}
                 {photos.length > 1 && (
-                    <button onClick={handleNext} className="lightbox-nav-btn right-4" title="Next">
+                    <button onClick={handleNext} className="lightbox-nav-btn right-2 sm:right-4" title="Next">
                         <ChevronRightIcon className="size-6" />
                     </button>
                 )}

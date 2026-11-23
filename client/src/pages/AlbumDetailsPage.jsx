@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from "react-router-dom";
-import { DUMMY_ALBUM_DETAIL } from '../assets/assets';
 import Loading from '../components/layout/common/Loading';
 import { ArrowLeft, Calendar, Plus, Trash2Icon } from 'lucide-react';
 import PhotoGrid from "../components/photos/PhotoGrid";
 import AddPhotosModal from '../components/albums/AddPhotosModal';
 import { PhotoLightbox } from '../components/photos/PhotoLightbox';
+import BulkSelectionBar from '../components/photos/BulkSelectionBar';
+import { api } from '../config/api';
+import toast from 'react-hot-toast';
 
 const AlbumDetailsPage = () => {
     const { id } = useParams();
@@ -16,31 +18,112 @@ const AlbumDetailsPage = () => {
     const [activePhoto, setActivePhoto] = useState(null);
     const [isAddPhotosModalOpen, setIsAddPhotosModalOpen] = useState(false);
 
-    const fetchAlbum = () => {
-        setTimeout(() => {
-            setAlbum(DUMMY_ALBUM_DETAIL);
+    const fetchAlbum = async () => {
+        try {
+            const res = await api.get(`/api/albums/${id}`);
+
+            setAlbum(res.data.album);
+        } catch (error) {
+            toast.error(
+                error.response?.data?.message || "Failed to load album"
+            );
+
+            navigate("/albums");
+        } finally {
             setLoading(false);
-        }, 1000);
-    }
+        }
+    };
 
     useEffect(() => {
         fetchAlbum();
     }, [id]);
 
-    const handleRemoveFromAlbum = async (photoId) => {
-        console.log(photoId);
-    }
+    const handleRemoveFromAlbum = async (photoIds) => {
+        if (!album) return;
+
+        const ids = Array.isArray(photoIds) ? photoIds : [photoIds];
+        if (ids.length === 0) return;
+
+        try {
+            if (Array.isArray(photoIds)) {
+                await api.delete(`/api/albums/${album._id}/photos`, {
+                    data: { photoIds: ids },
+                });
+            } else {
+                await api.delete(
+                    `/api/albums/${album._id}/photos/${ids[0]}`
+                );
+            }
+
+            const removedSet = new Set(ids);
+            setAlbum((prev) =>
+                prev
+                    ? {
+                        ...prev,
+                        photos: prev.photos.filter((photo) => !removedSet.has(photo._id)),
+                    }
+                    : prev
+            );
+            setSelectedIds((prev) => prev.filter((id) => !removedSet.has(id)));
+
+            if (activePhoto && removedSet.has(activePhoto._id)) {
+                setActivePhoto(null);
+            }
+
+            toast.success(`Removed ${ids.length} photo(s) from album`);
+        } catch (error) {
+            toast.error(
+                error.response?.data?.message || "Failed to remove photos from album"
+            );
+        }
+    };
 
     const toggleFavorite = async (photoId) => {
-        console.log(photoId);
-    }
+        try {
+            const res = await api.patch(
+                `/api/media/${photoId}/favorite`
+            );
 
-    const handleDeleteAlbum = async (photoId) => {
-        if (!album) return null;
-        if (!window.confirm('Are you sure you want to delete this album? photos inside will remain safe in your library.')) {
-            return
+            const updated = res.data.media;
+
+            setAlbum((prev) =>
+                prev
+                    ? {
+                        ...prev,
+                        photos: prev.photos.map((p) =>
+                            p._id === photoId
+                                ? {
+                                    ...p,
+                                    isFavorite: updated.isFavorite,
+                                }
+                                : p
+                        ),
+                    }
+                    : prev
+            );
+        } catch (error) {
+            toast.error("Failed to update favorite");
         }
-    }
+    };
+
+    const handleDeleteAlbum = async () => {
+        if (!album) return;
+
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this album? Photos inside will remain safe in your library."
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await api.delete(`/api/albums/${album._id}`);
+
+            toast.success("Album deleted");
+            navigate("/albums");
+        } catch (error) {
+            toast.error("Failed to delete album");
+        }
+    };
 
     if (loading) {
         return <Loading />
@@ -62,12 +145,12 @@ const AlbumDetailsPage = () => {
             </button>
 
             {/* Album Header */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 border border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
 
                 {/* Left */}
-                <div className="space-y-2">
+                <div className="space-y-2 min-w-0">
                     <div className="flex items-center gap-3">
-                        <h1 className="text-2xl sm:text-3xl text-slate-900 tracking-tight">
+                        <h1 className="min-w-0 break-words text-2xl sm:text-3xl text-slate-900 tracking-tight">
                             {album.title}
                         </h1>
                     </div>
@@ -94,10 +177,10 @@ const AlbumDetailsPage = () => {
                 </div>
 
                 {/* Right */}
-                <div className="flex items-center gap-2.5 shrink-0">
+                <div className="flex w-full items-center gap-2.5 shrink-0 md:w-auto">
                     <button
                         onClick={() => setIsAddPhotosModalOpen(true)}
-                        className="flex items-center gap-1.5 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium rounded-full transition cursor-pointer"
+                        className="flex flex-1 items-center justify-center gap-1.5 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium rounded-full transition cursor-pointer md:flex-none"
                     >
                         <Plus className="size-4" />
                         <span>Add Photos</span>
@@ -167,6 +250,12 @@ const AlbumDetailsPage = () => {
                 onClose={() => setActivePhoto(null)}
                 onToggleFavorite={toggleFavorite}
                 onTrashPhoto={(photoId) => handleRemoveFromAlbum(photoId)}
+            />
+
+            <BulkSelectionBar
+                count={selectedIds.length}
+                onClear={() => setSelectedIds([])}
+                onRemoveFromAlbum={() => handleRemoveFromAlbum(selectedIds)}
             />
         </div>
     )

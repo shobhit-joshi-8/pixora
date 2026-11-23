@@ -1,24 +1,36 @@
 import React, { useEffect, useState } from 'react'
 import { useOutletContext } from "react-router-dom"
-import { DUMMY_MEDIA } from '../assets/assets';
 import Loading from '../components/layout/common/Loading';
 import PhotoGrid from "../components/photos/PhotoGrid";
 import { PhotoLightbox } from '../components/photos/PhotoLightbox';
+import BulkSelectionBar from '../components/photos/BulkSelectionBar';
+import { api } from '../config/api';
+import toast from 'react-hot-toast';
 
 
 const FavoritesPage = () => {
-    const { searchQuery } = useOutletContext();
+    const { searchQuery, openCreateAlbum } = useOutletContext();
     const [loading, setLoading] = useState(true);
-    const [photos, setPhotos] = useState(true);
+    const [photos, setPhotos] = useState([]);
     const [selectedIds, setSelectedIds] = useState([]);
     const [activePhoto, setActivePhoto] = useState(null);
 
+    // Fetch favorites
     const fetchFavorites = async () => {
-        setTimeout(() => {
-            setPhotos(DUMMY_MEDIA.slice(5, 9));
+        try {
+            const url = searchQuery
+                ? `/api/media?favorite=true&q=${encodeURIComponent(searchQuery)}`
+                : "/api/media?favorite=true";
+
+            const res = await api.get(url);
+
+            setPhotos(res.data.media || []);
+        } catch (error) {
+            toast.error("Failed to load favorites");
+        } finally {
             setLoading(false);
-        }, 1000)
-    }
+        }
+    };
 
     useEffect(() => {
         fetchFavorites();
@@ -28,13 +40,71 @@ const FavoritesPage = () => {
         setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]))
     }
 
-    const toggleFavorite = async (id) => {
-        console.log(id)
-    }
+    const handleBulkAction = async (request, successMessage) => {
+        const ids = [...selectedIds];
+        const results = await Promise.allSettled(ids.map(request));
+        const updatedIds = ids.filter(
+            (_, index) => results[index].status === "fulfilled"
+        );
 
+        if (updatedIds.length > 0) {
+            const updatedSet = new Set(updatedIds);
+            setPhotos((prev) => prev.filter((photo) => !updatedSet.has(photo._id)));
+            setSelectedIds((prev) => prev.filter((id) => !updatedSet.has(id)));
+
+            if (activePhoto && updatedSet.has(activePhoto._id)) {
+                setActivePhoto(null);
+            }
+
+            toast.success(successMessage(updatedIds.length));
+        }
+
+        if (updatedIds.length !== ids.length) {
+            toast.error("Some selected items could not be updated");
+        }
+    };
+
+    // Toggle favorite
+    const toggleFavorite = async (id) => {
+        try {
+            await api.patch(`/api/media/${id}/favorite`);
+
+            setPhotos((prev) =>
+                prev.filter((p) => p._id !== id)
+            );
+            setSelectedIds((prev) => prev.filter((selectedId) => selectedId !== id));
+
+            if (activePhoto && activePhoto._id === id) {
+                setActivePhoto(null);
+            }
+
+            toast.success("Removed from favorites");
+        } catch (error) {
+            toast.error("Failed to update favorite");
+        }
+    };
+
+    // Move item to trash
     const handleTrash = async (id) => {
-        console.log(id)
-    }
+        try {
+            await api.patch(`/api/media/${id}/trash`, {
+                restore: false,
+            });
+
+            setPhotos((prev) =>
+                prev.filter((p) => p._id !== id)
+            );
+            setSelectedIds((prev) => prev.filter((selectedId) => selectedId !== id));
+
+            if (activePhoto && activePhoto._id === id) {
+                setActivePhoto(null);
+            }
+
+            toast.success("Moved item to trash");
+        } catch (error) {
+            toast.error("Failed to move to trash");
+        }
+    };
 
     return (
         <div className="max-w-7xl mx-auto space-y-6">
@@ -76,7 +146,7 @@ const FavoritesPage = () => {
                         photos={photos}
                         selectedIds={selectedIds}
                         onToggleSelect={onToggleSelect}
-                        onSelectPhoto={() => setActivePhoto(photos)}
+                        onSelectPhoto={(photo) => setActivePhoto(photo)}
                         onToggleFavorite={toggleFavorite} />
                 </div>
             )}
@@ -86,7 +156,26 @@ const FavoritesPage = () => {
                 currentPhoto={activePhoto}
                 onClose={() => setActivePhoto(null)}
                 onToggleFavorite={toggleFavorite}
-                ontrashPhoto={handleTrash}
+                onTrashPhoto={handleTrash}
+            />
+
+            <BulkSelectionBar
+                count={selectedIds.length}
+                onClear={() => setSelectedIds([])}
+                favoriteLabel="Remove favorite"
+                onFavorite={() =>
+                    handleBulkAction(
+                        (id) => api.patch(`/api/media/${id}/favorite`),
+                        (count) => `Removed ${count} item(s) from favorites`
+                    )
+                }
+                onAddToAlbum={() => openCreateAlbum?.(selectedIds)}
+                onTrash={() =>
+                    handleBulkAction(
+                        (id) => api.patch(`/api/media/${id}/trash`, { restore: false }),
+                        (count) => `Moved ${count} item(s) to trash`
+                    )
+                }
             />
         </div>
     )

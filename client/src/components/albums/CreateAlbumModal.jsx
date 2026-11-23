@@ -72,7 +72,7 @@ const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated, initialPhotoIds = [
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className='p-6 space-y-4'>
+                <form onSubmit={handleSubmit} className='p-4 sm:p-6 space-y-4'>
                     <div>
                         <label className="block text-xs font-medium text-slate-700 tracking-wider mb-1.5">
                             Album Title *

@@ -86,7 +86,7 @@ const PhotoGrid = ({ photos, selectedIds, onToggleSelect, onToggleFavorite, onSe
                         </div>
 
                         {/* Media Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
                             {groupPhotos.map((photo) => (
                                 <PhotoCard
                                     key={photo._id}

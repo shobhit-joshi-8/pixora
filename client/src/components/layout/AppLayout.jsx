@@ -14,7 +14,7 @@ const AppLayout = ({ children }) => {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const [createAlbumState, setcreateAlbumState] = useState({
         isOpen: false,
-        photosIds: []
+        photoIds: []
     });
 
     const navigate = useNavigate();
@@ -37,17 +37,20 @@ const AppLayout = ({ children }) => {
     }
 
     const handleAlbumcreated = (album) => {
-        setcreateAlbumState({ isOpen: false, photosIds: [] });
+        setcreateAlbumState({ isOpen: false, photoIds: [] });
         navigate(`/albums/${album._id}`);
     }
 
     const openCreateAlbum = (photoIds = []) => {
-        setcreateAlbumState({ isOpen: true, photoIds });
+        setcreateAlbumState({
+            isOpen: true,
+            photoIds: Array.isArray(photoIds) ? photoIds : [photoIds],
+        });
     }
 
 
     return (
-        <div className='h-screen flex flex-col bg-white overflow-hidden'>
+        <div className='h-dvh min-h-0 flex flex-col bg-white overflow-hidden'>
             <Navbar
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
@@ -70,9 +73,9 @@ const AppLayout = ({ children }) => {
 
             <CreateAlbumModal
                 isOpen={createAlbumState.isOpen}
-                onClose={() => setcreateAlbumState({ isOpen: false, photosIds: [] })}
+                onClose={() => setcreateAlbumState({ isOpen: false, photoIds: [] })}
                 onAlbumCreated={handleAlbumcreated}
-                intitialPhotoIds={createAlbumState.photosIds}
+                initialPhotoIds={createAlbumState.photoIds}
             />
 
             <UploadModal

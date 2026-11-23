@@ -49,6 +49,7 @@ const Navbar = ({
             {/* Left brand & mobile hamburger */}
             <div className="navbar-brand">
                 <button
+                    onClick={toggleSidebar}
                     className="navbar-menu-btn"
                     title="Toggle menu"
                     aria-label="Toggle navigation menu"
@@ -68,7 +69,7 @@ const Navbar = ({
             </div>
 
             {/* Center Search Bar */}
-            <div className="flex-1 max-w-2xl relative">
+            <div className="flex-1 min-w-0 max-w-2xl relative">
                 <div className="navbar-search-wrapper">
                     <SearchIcon className="size-4 text-slate-500 shrink-0 mr-2 sm:mr-3" />
 

@@ -142,10 +142,6 @@ const PhotosPage = () => {
         }
     }
 
-    const handleRemoveFromAlbum = () => {
-        console.log(selectedIds);
-    }
-
     useEffect(() => {
         fetchPhotos();
     }, [searchQuery, filterType])
@@ -184,10 +180,10 @@ const PhotosPage = () => {
 
                 {/* right */}
                 <div className="flex items-center gap-2.5">
-                    <div className="flex items-center bg-slate-100 p-1 rounded-full text-sm font-medium text-slate-600">
+                    <div className="flex flex-wrap items-center bg-slate-100 p-1 rounded-full text-sm font-medium text-slate-600">
                         <button
                             onClick={() => setFilterType("all")}
-                            className={`px-3 py-1 rounded-full transition cursor-pointer ${filterType === "all"
+                            className={`px-2.5 sm:px-3 py-1 rounded-full transition cursor-pointer whitespace-nowrap ${filterType === "all"
                                 ? "bg-white text-slate-900 font-semibold"
                                 : "hover:text-slate-900"
                                 }`}
@@ -197,7 +193,7 @@ const PhotosPage = () => {
 
                         <button
                             onClick={() => setFilterType("image")}
-                            className={`flex items-center gap-1 px-3 py-1 rounded-full transition cursor-pointer ${filterType === "image"
+                            className={`flex items-center gap-1 px-2.5 sm:px-3 py-1 rounded-full transition cursor-pointer whitespace-nowrap ${filterType === "image"
                                 ? "bg-white text-slate-900 font-semibold"
                                 : "hover:text-slate-900"
                                 }`}
@@ -208,7 +204,7 @@ const PhotosPage = () => {
 
                         <button
                             onClick={() => setFilterType("video")}
-                            className={`flex items-center gap-1 px-3 py-1 rounded-full transition cursor-pointer ${filterType === "video"
+                            className={`flex items-center gap-1 px-2.5 sm:px-3 py-1 rounded-full transition cursor-pointer whitespace-nowrap ${filterType === "video"
                                 ? "bg-white text-slate-900 font-semibold"
                                 : "hover:text-slate-900"
                                 }`}
@@ -240,14 +236,14 @@ const PhotosPage = () => {
                 </div>
             ) : (
                 <div>
-                    <PhotoGrid photos={photos} selectedIds={selectedIds} onToggleSelect={toggleSelect} onToggleFavorite={toggleFavorite} onSelectPhoto={(photo) => setactivePhoto(photo)} onRemoveFromAlbum={handleRemoveFromAlbum} />
+                    <PhotoGrid photos={photos} selectedIds={selectedIds} onToggleSelect={toggleSelect} onToggleFavorite={toggleFavorite} onSelectPhoto={(photo) => setactivePhoto(photo)} />
                 </div>
             )}
 
             <PhotoLightbox photos={photos}
                 currentPhoto={activePhoto}
                 onClose={() => setactivePhoto(null)}
-                onToggle={toggleFavorite}
+                onToggleFavorite={toggleFavorite}
                 onTrashPhoto={handleTrash}
                 onAddToAlbum={(photo) => {
                     openCreateAlbum?.(photo._id)

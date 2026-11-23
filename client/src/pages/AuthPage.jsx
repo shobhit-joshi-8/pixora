@@ -64,11 +64,11 @@ const AuthPage = () => {
     }
 
     return (
-        <div className="w-full bg-white h-screen rounded-[30px] sm:rounded-[38px] overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-160 lg:min-h-180">
+        <div className="w-full min-h-dvh bg-white rounded-[24px] sm:rounded-[38px] overflow-hidden grid grid-cols-1 lg:h-dvh lg:min-h-[45rem] lg:grid-cols-12">
 
             {/* Hero */}
-            <div className="relative lg:col-span-6 p-2 sm:p-3 flex flex-col">
-                <div className="relative size-full rounded-[26px] sm:rounded-4xl overflow-hidden flex flex-col justify-between p-8 sm:p-12 text-white bg-black">
+            <div className="relative min-h-[34vh] sm:min-h-[40vh] lg:col-span-6 lg:min-h-0 p-2 sm:p-3 flex flex-col">
+                <div className="relative size-full min-h-[30vh] sm:min-h-[36vh] lg:min-h-0 rounded-[20px] sm:rounded-4xl overflow-hidden flex flex-col justify-between p-6 sm:p-12 text-white bg-black">
                     <img
                         src="/login_ribbon.png"
                         alt="Fluid neon art"
@@ -78,7 +78,7 @@ const AuthPage = () => {
 
                     <div className="relative z-10 mt-auto pt-24 sm:pt-32">
 
-                        <h2 className="text-4xl sm:text-5x1 lg:text-5x1 font-medium">MY Photos</h2>
+                        <h2 className="text-3xl sm:text-5xl font-medium">MY Photos</h2>
 
                         <p className="text-xs sm:text-sm text-white/80 leading-relaxed max-w-sm mt-4 sm:mt-5">Safely store and organize your HD photos and videos.</p>
 
@@ -90,7 +90,7 @@ const AuthPage = () => {
 
             {/* Form */}
 
-            <div className="lg:col-span-6 bg-white px-8 py-10 sm:px-12 sm:py-14 1g:px-16 1g:py-16 flex flex-col justify-between">
+            <div className="lg:col-span-6 bg-white px-5 py-8 sm:px-12 sm:py-14 lg:px-16 lg:py-16 flex flex-col justify-between">
 
                 <img src="/logo.png" alt="App Logo" className="h-16 xl:h-20 xl:mt-10 w-auto object-contain" />
 
@@ -99,7 +99,7 @@ const AuthPage = () => {
                     {/* HEADING */}
                     <div className='text-center mb-8'>
 
-                        <h1 className="text-3x1 sm:text-4xl font-serif text-slate-900 font-normal tracking-tight">
+                        <h1 className="text-3xl sm:text-4xl font-serif text-slate-900 font-normal tracking-tight">
                             {isLogin ? "Welcome Back" : "Create Account"}</h1>
 
                         <p className="text-xs sm:text-sm text-slate-500 mt-2">
@@ -177,7 +177,7 @@ cursor-pointer'>
 
 cursor-pointer'>
 
-                        {isLogin ? "Sign Up" : "Sign Int"}
+                        {isLogin ? "Sign Up" : "Sign In"}
 
                     </button>
 

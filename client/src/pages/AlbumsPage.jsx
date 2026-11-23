@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { DUMMY_ALBUMS_DATA } from '../assets/assets';
-import { FolderHeartIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import { FolderHeartIcon, ImageIcon, PlusIcon, Trash2Icon } from "lucide-react"
 import Loading from '../components/layout/common/Loading';
+import { api } from '../config/api';
+import toast from 'react-hot-toast';
 
 const AlbumsPage = () => {
 
@@ -11,21 +12,47 @@ const AlbumsPage = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+    // Fetch albums
     const fetchAlbums = async () => {
-        setTimeout(() => {
-            setAlbums(DUMMY_ALBUMS_DATA);
+        try {
+            const res = await api.get("/api/albums");
+
+            setAlbums(res.data.albums || []);
+        } catch (error) {
+            toast.error("Failed to load albums");
+        } finally {
             setLoading(false);
-        }, [1000])
-    }
+        }
+    };
 
     useEffect(() => {
         fetchAlbums();
     }, []);
 
+    // Delete album
     const handleDeleteAlbum = async (e, id) => {
         e.stopPropagation();
-        console.log(id);
-    }
+
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this album? Photos inside won't be deleted."
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            await api.delete(`/api/albums/${id}`);
+
+            toast.success("Album deleted");
+
+            setAlbums((prev) =>
+                prev.filter((a) => a._id !== id)
+            );
+        } catch (error) {
+            toast.error("Failed to delete album");
+        }
+    };
 
 
     return (
@@ -62,16 +89,26 @@ const AlbumsPage = () => {
             {loading ? (
                 <Loading />
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-5">
                     {/* Create New Album Card */}
-                    <div className="album-card-create" onClick={() => openCreateAlbum?.()}>
-                        <div className="size-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mb-4">
-                            <PlusIcon className="size-6" />
+                    <div
+                        className="group album-card"
+                        onClick={() => openCreateAlbum?.()}
+                    >
+                        <div className="aspect-4/3 w-full bg-linear-to-br from-red-50 to-white flex items-center justify-center">
+                            <div className="size-12 rounded-2xl bg-white text-red-600 flex items-center justify-center shadow-sm transition-transform group-hover:scale-105">
+                                <PlusIcon className="size-6" />
+                            </div>
                         </div>
 
-                        <span className="text-sm text-slate-700 group-hover:text-red-600">
-                            New Album
-                        </span>
+                        <div className="px-4 pb-3 py-2">
+                            <h4 className="text-slate-800 text-sm font-medium group-hover:text-red-600 transition">
+                                New Album
+                            </h4>
+                            <p className="text-xs text-slate-400 mt-0.5">
+                                Create a collection
+                            </p>
+                        </div>
                     </div>
 
                     {/* Album Cards */}
@@ -127,7 +164,7 @@ const AlbumsPage = () => {
 
                                     {/* Action Buttons on Card Hover */}
                                     {/* Action Buttons on Card Hover */}
-                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                                    <div className="album-card-delete-btn flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
                                         <button
                                             onClick={(e) => handleDeleteAlbum(e, album._id)}
                                             className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition cursor-pointer"

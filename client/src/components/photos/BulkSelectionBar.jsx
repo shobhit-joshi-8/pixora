@@ -1,7 +1,15 @@
 import { CheckSquareIcon, FolderPlusIcon, StarIcon, Trash2Icon, XIcon } from 'lucide-react';
 import React from 'react'
 
-const BulkSelectionBar = ({ count, onClear, onFavorite, onAddToAlbum, onTrash }) => {
+const BulkSelectionBar = ({
+    count,
+    onClear,
+    onFavorite,
+    favoriteLabel = "Favorite",
+    onAddToAlbum,
+    onTrash,
+    onRemoveFromAlbum,
+}) => {
 
     if (count == 0) return null;
 
@@ -23,29 +31,45 @@ const BulkSelectionBar = ({ count, onClear, onFavorite, onAddToAlbum, onTrash })
             </div>
 
             <div className="flex items-center gap-1 sm:gap-2">
-                <button
-                    onClick={onFavorite}
-                    className="bulk-bar-btn"
-                >
-                    <StarIcon className="size-3.5 text-slate-500" />
-                    <span className="hidden sm:inline">Favorite</span>
-                </button>
+                {onFavorite && (
+                    <button
+                        onClick={onFavorite}
+                        className="bulk-bar-btn"
+                    >
+                        <StarIcon className="size-3.5 text-slate-500" />
+                        <span className="hidden sm:inline">{favoriteLabel}</span>
+                    </button>
+                )}
 
-                <button
-                    onClick={onAddToAlbum}
-                    className="bulk-bar-btn"
-                >
-                    <FolderPlusIcon className="size-3.5 text-slate-600" />
-                    <span className="hidden sm:inline">Add to album</span>
-                </button>
+                {onAddToAlbum && (
+                    <button
+                        onClick={onAddToAlbum}
+                        className="bulk-bar-btn"
+                    >
+                        <FolderPlusIcon className="size-3.5 text-slate-600" />
+                        <span className="hidden sm:inline">Add to album</span>
+                    </button>
+                )}
 
-                <button
-                    onClick={onTrash}
-                    className="bulk-bar-btn"
-                >
-                    <Trash2Icon className="size-3.5" />
-                    <span className="hidden sm:inline">Move to trash</span>
-                </button>
+                {onTrash && (
+                    <button
+                        onClick={onTrash}
+                        className="bulk-bar-btn"
+                    >
+                        <Trash2Icon className="size-3.5" />
+                        <span className="hidden sm:inline">Move to trash</span>
+                    </button>
+                )}
+
+                {onRemoveFromAlbum && (
+                    <button
+                        onClick={onRemoveFromAlbum}
+                        className="bulk-bar-btn"
+                    >
+                        <XIcon className="size-3.5" />
+                        <span className="hidden sm:inline">Remove from album</span>
+                    </button>
+                )}
             </div>
         </div>
 

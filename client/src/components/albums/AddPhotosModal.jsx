@@ -1,6 +1,8 @@
 import { CheckIcon, PlayIcon, XIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
-import { DUMMY_MEDIA } from '../../assets/assets';
+import { api } from '../../config/api';
+import toast from 'react-hot-toast';
+import Loading from '../layout/common/Loading';
 
 const AddPhotosModal = ({
     isOpen,
@@ -17,7 +19,23 @@ const AddPhotosModal = ({
     useEffect(() => {
         if (isOpen) {
             const fetchLibrary = async () => {
-                setAvailablePhotos(DUMMY_MEDIA);
+                setLoading(true);
+
+                try {
+                    const res = await api.get("/api/media");
+
+                    const existingSet = new Set(existingPhotoIds);
+
+                    const notInAlbum = (res.data.media || []).filter(
+                        (p) => !existingSet.has(p._id)
+                    );
+
+                    setAvailablePhotos(notInAlbum);
+                } catch (error) {
+                    toast.error("Failed to load your photos library");
+                } finally {
+                    setLoading(false);
+                }
             };
 
             fetchLibrary();
@@ -34,7 +52,31 @@ const AddPhotosModal = ({
     };
 
     const handleAdd = async () => {
-        console.log(selectedIds);
+        if (selectedIds.length === 0) return;
+
+        setSubmitting(true);
+
+        try {
+            const res = await api.post(
+                `/api/albums/${albumId}/photos`,
+                {
+                    photoIds: selectedIds,
+                }
+            );
+
+            toast.success(
+                `Added ${selectedIds.length} photo(s) to album!`
+            );
+
+            onPhotosAdded(res.data.album);
+            onClose();
+        } catch (error) {
+            toast.error(
+                error.response?.data?.message || "Failed to add photos"
+            );
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     if (!isOpen) return null;
@@ -58,7 +100,7 @@ const AddPhotosModal = ({
                     </button>
                 </div>
 
-                <div className="p-6 overflow-y-auto flex-1">
+                <div className="p-4 sm:p-6 overflow-y-auto flex-1">
                     {loading ? (
                         <Loading className="py-16" size="sm" />
                     ) : availablePhotos.length === 0 ? (
@@ -72,7 +114,7 @@ const AddPhotosModal = ({
                             </p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             {availablePhotos.map((photo) => {
                                 const isSelected = selectedIds.includes(photo._id);
 
@@ -124,12 +166,12 @@ const AddPhotosModal = ({
                 </div>
 
                 {/* Footer */}
-                <div className="modal-footer flex justify-between items-center">
+                <div className="modal-footer flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <span>
                         {selectedIds.length} item(s) selected
                     </span>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex justify-end items-center gap-2">
                         <button
                             onClick={onClose}
                             className="btn-secondary"

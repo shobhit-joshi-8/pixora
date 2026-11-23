@@ -58,7 +58,7 @@ const PhotoCard = ({ photo, isSelected, onToggleSelect, onToggleFavorite, onClic
                                 e.stopPropagation();
                                 onRemoveFromAlbum(e);
                             }}
-                            className="photo-card-action-btn hover:text-red-600!"
+                            className="photo-card-action-btn absolute top-2.5 left-10 z-10 hover:text-red-600!"
                             title="Remove from album"
                         >
                             <XIcon className="size-3.5" />

@@ -112,7 +112,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
                 {/* Content */}
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto space-y-4">
+                <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
                     {/* Drag and Drop Box */}
                     <div
                         onDragOver={(e) => {
@@ -177,7 +177,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
                                 </button>
                             </div>
 
-                            <div className="grid grid-cols-4 gap-3 max-h-48 overflow-y-auto p-1">
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-1">
                                 {previews.map((preview, idx) => (
                                     <div
                                         key={idx}
@@ -210,7 +210,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
                                                 e.stopPropagation();
                                                 removeFile(idx);
                                             }}
-                                            className="absolute top-1 right-1 p-1 bg-black/60 hover:bg-rose-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                                            className="upload-preview-remove absolute top-1 right-1 p-1 bg-black/60 hover:bg-rose-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition cursor-pointer"
                                             aria-label="Remove file"
                                         >
                                             <X className="size-3" />

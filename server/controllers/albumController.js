@@ -188,6 +188,51 @@ export const removePhotoFromAlbum = async (req, res) => {
     }
 };
 
+export const removePhotosFromAlbum = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { photoIds } = req.body;
+
+        if (!Array.isArray(photoIds) || photoIds.length === 0) {
+            res.status(400).json({
+                message: "photoIds array is required",
+            });
+            return;
+        }
+
+        const album = await Album.findOneAndUpdate(
+            {
+                _id: id,
+                owner: req.user?.id,
+            },
+            {
+                $pull: {
+                    photos: { $in: photoIds },
+                },
+            },
+            { new: true }
+        ).populate({
+            path: "photos",
+            match: { isTrash: false },
+        });
+
+        if (!album) {
+            res.status(404).json({
+                message: "Album not found",
+            });
+            return;
+        }
+
+        res.json({ album });
+    } catch (error) {
+        console.log(error.message);
+
+        res.status(500).json({
+            message: "Failed to remove photos from album",
+        });
+    }
+};
+
 export const deleteAlbum = async (req, res) => {
     try {
         const { id } = req.params;

@@ -8,6 +8,8 @@ import {
     deleteAlbum,
     getAlbumById,
     getMyAlbums,
+    removePhotoFromAlbum,
+    removePhotosFromAlbum,
 } from "../controllers/albumController.js";
 
 const albumRouter = Router();
@@ -19,5 +21,7 @@ albumRouter.get("/", getMyAlbums);
 albumRouter.get("/:id", getAlbumById);
 albumRouter.delete("/:id", deleteAlbum);
 albumRouter.post("/:id/photos", addPhotosToAlbum);
+albumRouter.delete("/:id/photos", removePhotosFromAlbum);
+albumRouter.delete("/:id/photos/:photoId", removePhotoFromAlbum);
 
 export default albumRouter;
