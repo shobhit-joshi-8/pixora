@@ -21,7 +21,7 @@ app.get("/", (_req, res) => {
 });
 app.use("/api/auth", authRouter);
 app.use("/api/media", mediaRouter);
-app.use("/api/album", albumRouter);
+app.use("/api/albums", albumRouter);
 
 
 // Error-handling middleware

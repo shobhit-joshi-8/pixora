@@ -10,7 +10,7 @@ import {
     XIcon,
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
-import { DUMMY_STATS } from '../../assets/assets';
+import { api } from '../../config/api';
 
 const Sidebar = ({
     onCreateAlbumClick,
@@ -20,8 +20,13 @@ const Sidebar = ({
 }) => {
     const [stats, setStats] = useState(null);
 
-    const fetchStats = () => {
-        setStats(DUMMY_STATS);
+    const fetchStats = async () => {
+        try {
+            const res = await api.get("/api/media/stats");
+            setStats(res.data);
+        } catch (error) {
+            console.log(error?.message);
+        }
     };
 
     useEffect(() => {
@@ -77,8 +82,8 @@ const Sidebar = ({
 
             <aside
                 className={`sidebar-container ${isMobileOpen
-                        ? 'sidebar-mobile-open'
-                        : 'sidebar-mobile-closed'
+                    ? 'sidebar-mobile-open'
+                    : 'sidebar-mobile-closed'
                     }`}
             >
                 {/* Header */}

@@ -9,6 +9,7 @@ import {
     XIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../../context/AuthContext';
 
 const Navbar = ({
     searchQuery,
@@ -16,12 +17,7 @@ const Navbar = ({
     onUploadClick,
     toggleSidebar,
 }) => {
-    const { user } = {
-        user: {
-            name: "Shobhit Joshi",
-            email: "joshishobhit.works@gmail.com",
-        },
-    };
+    const { user, logout } = useAuth();
 
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -141,7 +137,7 @@ const Navbar = ({
                                 <button
                                     onClick={() => {
                                         setDropdownOpen(false);
-                                        navigate("/login");
+                                        logout();
                                     }}
                                     className="navbar-logout-btn"
                                 >

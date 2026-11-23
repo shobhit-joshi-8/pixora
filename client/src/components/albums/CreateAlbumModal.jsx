@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { FolderPlusIcon, XIcon } from "lucide-react";
 import Loading from "../layout/common/Loading";
+import toast from 'react-hot-toast';
+import { api } from '../../config/api';
 
 const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated, initialPhotoIds = [] }) => {
 
@@ -12,7 +14,34 @@ const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated, initialPhotoIds = [
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    }
+
+        if (!title.trim()) {
+            toast.error("Please enter an album title");
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const res = await api.post("/api/albums", {
+                title: title.trim(),
+                description: description.trim(),
+                photoIds: initialPhotoIds,
+            });
+
+            toast.success("Album created successfully!");
+
+            onAlbumCreated(res.data.album);
+            handleClose();
+        } catch (error) {
+            toast.error(
+                error.response?.data?.message || "Failed to create album"
+            );
+            console.log(error)
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleClose = () => {
         setTitle("");

@@ -1,6 +1,8 @@
 import { Film, X } from 'lucide-react';
 import React, { useRef, useState } from 'react'
 import toast from "react-hot-toast";
+import { api } from '../../config/api';
+import Loading from '../layout/common/Loading';
 
 const UploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
 
@@ -14,8 +16,38 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
     if (!isOpen) return null;
 
     const handleUpload = async () => {
-        console.log(selectedFiles, "slected files ");
-    }
+        if (selectedFiles.length === 0) return;
+
+        setUploading(true);
+
+        const formData = new FormData();
+
+        selectedFiles.forEach((file) => {
+            formData.append("media", file);
+        });
+
+        try {
+            const res = await api.post("/api/media/upload", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
+            toast.success(res.data.message || "Uploaded successfully!");
+
+            onUploadSuccess(res.data.media || []);
+
+            handleClose();
+        } catch (error) {
+            toast.error(
+                error.response?.data?.message || "Upload failed"
+            );
+
+            console.log(error)
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const handleClose = () => {
         previews.forEach((p) => URL.revokeObjectURL(p.URL));

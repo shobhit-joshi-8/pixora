@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { useNavigate } from "react-router-dom"
 import { EyeOff, Eye } from "lucide-react";
 import Loading from '../components/layout/common/Loading';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const Input = ({ label, value, placeholder, type = "text", onChange, required =
 
@@ -27,11 +29,37 @@ const AuthPage = () => {
         rememberMe: true
     })
 
-    const update = (key, value) => setForm((prev) => ({ prev, [key]: value }));
+    const { login, register } = useAuth();
+
+    const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
     const handlesubmit = async (e) => {
         e.preventDefault();
-        navigate('/');
+
+
+        setLoading(true);
+        try {
+            if (isLogin) {
+                await login(form.email, form.password);
+
+                toast.success("Welcome back!");
+            } else {
+                if (!form.name.trim()) {
+                    toast.error("Please enter your name");
+                    return;
+                }
+
+                await register(form.name, form.email, form.password);
+
+                toast.success("Account created successfully!");
+            }
+            navigate("/");
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Authentication failed")
+        }
+        finally {
+            setLoading(false);
+        }
 
     }
 
@@ -81,9 +109,9 @@ const AuthPage = () => {
                     </div>
 
                     <form onSubmit={handlesubmit} className='space-y-4'>
-                        {!isLogin && <Input key="name" lable="Full Name" value={form.name} placeholder="Enter your name" onChange={(v) => update("name", v)} />}
+                        {!isLogin && <Input key="name" label="Full Name" value={form.name} placeholder="Enter your name" onChange={(v) => update("name", v)} />}
 
-                        <Input key="email" lable="Email" value={form.email} placeholder="Enter your email" onChange={(v) => update("email", v)} />
+                        <Input key="email" label="Email" value={form.email} placeholder="Enter your email" onChange={(v) => update("email", v)} />
 
 
                         {/* Password */}
@@ -97,8 +125,6 @@ const AuthPage = () => {
                                 <input type={showPassword ? "text" : "password"} value={form.password} onChange={(e) => update("password", e.target.value)} placeholder="Enter your password" required className="auth-input pr-11" />
 
                                 <button type="button" onClick={() => setShowPassword((v) => !v)} className='absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition cursor-pointer'>{showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-
-
                                 </button>
 
                             </div>
@@ -132,7 +158,7 @@ cursor-pointer'>
 
                             className="auth-btn-primary">
 
-                            {loading ? <Loading inline size='xs'/> : isLogin ? "Sign In" : "Sign Up"}
+                            {loading ? <Loading inline size='xs' /> : isLogin ? "Sign In" : "Sign Up"}
 
                         </button>
                     </form>

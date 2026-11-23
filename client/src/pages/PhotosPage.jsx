@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { DUMMY_MEDIA } from '../assets/assets';
 import { useOutletContext } from 'react-router-dom';
 import { Film, ImageIcon, Upload } from 'lucide-react';
 import Loading from '../components/layout/common/Loading';
 import PhotoGrid from '../components/photos/PhotoGrid';
 import { PhotoLightbox } from '../components/photos/PhotoLightbox';
 import BulkSelectionBar from '../components/photos/BulkSelectionBar';
+import toast from "react-hot-toast";
+import { api } from '../config/api';
 
 const PhotosPage = () => {
 
@@ -26,27 +27,119 @@ const PhotosPage = () => {
         );
     };
 
+    // Toggle favorite
     const toggleFavorite = async (id) => {
-        console.log(id);
+        try {
+            const res = await api.patch(`/api/media/${id}/favorite`);
+
+            const updated = res.data.media;
+
+            setPhotos((prev) =>
+                prev.map((p) =>
+                    p._id === id
+                        ? { ...p, isFavorite: updated.isFavorite }
+                        : p
+                )
+            );
+
+            if (activePhoto && activePhoto._id === id) {
+                setactivePhoto({
+                    ...activePhoto,
+                    isFavorite: updated.isFavorite,
+                });
+            }
+        } catch (error) {
+            toast.error("Failed to update favorite");
+        }
     };
 
+    // Move photo to trash
     const handleTrash = async (id) => {
-        console.log(id);
+        try {
+            await api.patch(`/api/media/${id}/trash`, {
+                restore: false,
+            });
+
+            setPhotos((prev) =>
+                prev.filter((p) => p._id !== id)
+            );
+
+            setSelectedIds((prev) =>
+                prev.filter((i) => i !== id)
+            );
+
+            if (activePhoto && activePhoto._id === id) {
+                setactivePhoto(null);
+            }
+
+            toast.success("Moved item to trash");
+        } catch (error) {
+            toast.error("Failed to move to trash");
+        }
     };
 
+    // Bulk favorite
     const handleBulkFavorite = async () => {
-        console.log(selectedIds);
+        try {
+            for (const id of selectedIds) {
+                await api.patch(`/api/media/${id}/favorite`);
+            }
+
+            toast.success("Updated selected favorites");
+
+            fetchPhotos();
+            setSelectedIds([]);
+        } catch (error) {
+            toast.error("Bulk favorite update failed");
+        }
     };
 
+    // Bulk trash
     const handleBulkTrash = async () => {
-        console.log(selectedIds);
+        try {
+            for (const id of selectedIds) {
+                await api.patch(`/api/media/${id}/trash`, {
+                    restore: false,
+                });
+            }
+
+            toast.success(
+                `Moved ${selectedIds.length} item(s) to trash`
+            );
+
+            fetchPhotos();
+            setSelectedIds([]);
+        } catch (error) {
+            toast.error("Bulk trash failed");
+        }
     };
 
     const fetchPhotos = async () => {
-        setTimeout(() => {
-            setPhotos(DUMMY_MEDIA);
+        try {
+            const params = new URLSearchParams();
+
+            if (searchQuery) {
+                params.append("q", searchQuery);
+            }
+
+            if (filterType !== "all") {
+                params.append("type", filterType);
+            }
+
+            const queryString = params.toString();
+
+            const url = queryString
+                ? `/api/media?${queryString}`
+                : "/api/media";
+
+            const res = await api.get(url);
+
+            setPhotos(res.data.media || []);
+        } catch (error) {
+            toast.error("Failed to load media");
+        } finally {
             setLoading(false);
-        }, 1000)
+        }
     }
 
     const handleRemoveFromAlbum = () => {
@@ -56,6 +149,16 @@ const PhotosPage = () => {
     useEffect(() => {
         fetchPhotos();
     }, [searchQuery, filterType])
+
+    useEffect(() => {
+        const handleRefresh = () => fetchPhotos();
+
+        window.addEventListener("media-uploaded", handleRefresh);
+
+        return () => {
+            window.removeEventListener("media-uploaded", handleRefresh);
+        };
+    }, []);
 
 
     return (

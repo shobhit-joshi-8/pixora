@@ -39,7 +39,7 @@ export const uploadMedia = async (req, res) => {
 
             const title = file.originalname;
 
-            const endpoint = process.env.IMAGEKIT_URL_ENDPOINT;
+            const endpoint = process.env.IMAGE_KIT_URL_ENDPOINT;
 
             const imagePath = ikRes.filePath;
 
